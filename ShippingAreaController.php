@@ -137,7 +137,7 @@ class ShippingAreaController extends Controller
     {
         $division = ShipDivision::orderby('division_name','ASC')->get();
         $district = ShipDistrict::with('division')->orderby('id','DESC')->get();
-        $state = ShipState::orderby('id','DESC')->get();
+        $state = ShipState::with('division','district')->orderby('id','DESC')->get();
         return view('backend.ship.state.view_state',compact('district','division','state'));
     }
 
@@ -158,5 +158,46 @@ class ShippingAreaController extends Controller
         return redirect()->back()->with($notification);
 
     }
+
+    public function stateedit($id)
+    {
+        $division = ShipDivision::orderby('division_name','ASC')->get();
+        $dis = ShipDistrict::orderby('district_name','ASC')->get();
+        $state = ShipState::findorfail($id);  
+        return view('backend.ship.state.edit_state',compact('dis','division','state'));
+    }
+    public function updatestate(Request $request,$id)
+    {
+        $id = $request->id;
+
+        ShipState::findorfail($id)->update([
+
+            'division_id' => $request->division_id,
+            'district_id' => $request->district_id,
+            'state_name' => $request->state_name,
+
+        ]);
+
+        $notification = array( 
+            'message' => 'State Updated Successfully',
+            'alert-type' => 'success'
+        );
+
+        return redirect()->route('manage.state')->with($notification);
+
+    }
+
+    public function deletestate($id)
+    {
+        
+        ShipState::findorfail($id)->delete();
+        $notification = array( 
+            'message' => 'State Deleted Successfully',
+            'alert-type' => 'success'
+        );
+
+        return redirect()->route('manage.state')->with($notification);
+    }
+
 
 }
